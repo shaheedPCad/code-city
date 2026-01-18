@@ -1,30 +1,41 @@
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, type RefObject } from 'react'
 import { createCityRenderer } from '../render/createCityRenderer'
-import SimWorker from '../worker/simWorker?worker'
 
-export function CityViewport() {
+interface CityViewportProps {
+  worker: RefObject<Worker | null>
+  workerReady: boolean
+}
+
+export function CityViewport({ worker, workerReady }: CityViewportProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const receivedFirstSnapshot = useRef(false)
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || !worker.current) return
 
     const renderer = createCityRenderer(containerRef.current)
-    const worker = new SimWorker()
+    const w = worker.current
 
-    worker.onmessage = (e: MessageEvent) => {
+    const handleMessage = (e: MessageEvent) => {
       const { type, positions, flags } = e.data
       if (type === 'snapshot') {
+        if (!receivedFirstSnapshot.current) {
+          console.log('[CityViewport] First snapshot received')
+          receivedFirstSnapshot.current = true
+        }
         const positionsArray = new Float32Array(positions)
         const flagsArray = new Uint8Array(flags)
         renderer.setAgents(positionsArray, flagsArray)
       }
     }
 
+    w.addEventListener('message', handleMessage)
+
     return () => {
-      worker.terminate()
+      w.removeEventListener('message', handleMessage)
       renderer.destroy()
     }
-  }, [])
+  }, [worker, workerReady])
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

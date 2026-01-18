@@ -1,5 +1,6 @@
 import { initAgents, simulateStep } from '../sim/simulateStep'
 import type { SimState } from '../sim/simulateStep'
+import type { MainToWorkerMessage } from '../shared/messages'
 
 // Worker global scope type for postMessage with transferables
 interface WorkerGlobalScopeWithTransfer {
@@ -9,9 +10,12 @@ interface WorkerGlobalScopeWithTransfer {
 const workerSelf = self as unknown as WorkerGlobalScopeWithTransfer
 
 const AGENT_COUNT = 10_000
-const TICK_INTERVAL_MS = 50 // 20 Hz
+const BASE_TICK_MS = 50 // 20 Hz base rate
 
 let state: SimState
+let isRunning = false
+let speedMultiplier = 1
+let tickInterval: ReturnType<typeof setInterval> | null = null
 
 // Double-buffering: two sets of buffers to avoid allocation
 let bufferA = {
@@ -28,10 +32,7 @@ function init() {
   state = initAgents(AGENT_COUNT)
 }
 
-function tick() {
-  // Run simulation step
-  simulateStep(state)
-
+function postSnapshot() {
   // Pick transfer buffer
   const transferBuffer = useBufferA ? bufferA : bufferB
   useBufferA = !useBufferA
@@ -65,6 +66,47 @@ function tick() {
   }
 }
 
-// Initialize and start loop
+function tick() {
+  simulateStep(state)
+  postSnapshot()
+}
+
+function startLoop() {
+  if (tickInterval !== null) return
+  tickInterval = setInterval(tick, BASE_TICK_MS / speedMultiplier)
+}
+
+function stopLoop() {
+  if (tickInterval !== null) {
+    clearInterval(tickInterval)
+    tickInterval = null
+  }
+}
+
+function restartLoop() {
+  stopLoop()
+  if (isRunning) startLoop()
+}
+
+self.onmessage = (e: MessageEvent<MainToWorkerMessage>) => {
+  const msg = e.data
+  switch (msg.type) {
+    case 'start':
+      isRunning = true
+      startLoop()
+      break
+    case 'pause':
+      isRunning = false
+      stopLoop()
+      break
+    case 'speed':
+      speedMultiplier = msg.value
+      restartLoop()
+      break
+  }
+}
+
+// Initialize and send initial snapshot
 init()
-setInterval(tick, TICK_INTERVAL_MS)
+console.log('[Worker] Initialized, posting initial snapshot')
+postSnapshot()

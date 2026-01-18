@@ -1,4 +1,9 @@
-import { useState } from 'react'
+import { useState, type RefObject } from 'react'
+import type { MainToWorkerMessage } from '../shared/messages'
+
+interface ControlPanelProps {
+  worker: RefObject<Worker | null>
+}
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -32,9 +37,28 @@ function Toggle({ label, defaultChecked }: { label: string; defaultChecked?: boo
   )
 }
 
-export function ControlPanel() {
+export function ControlPanel({ worker }: ControlPanelProps) {
   const [speed, setSpeed] = useState<1 | 2 | 4>(1)
   const [isRunning, setIsRunning] = useState(false)
+
+  const sendMessage = (msg: MainToWorkerMessage) => {
+    worker.current?.postMessage(msg)
+  }
+
+  const handleStart = () => {
+    setIsRunning(true)
+    sendMessage({ type: 'start' })
+  }
+
+  const handlePause = () => {
+    setIsRunning(false)
+    sendMessage({ type: 'pause' })
+  }
+
+  const handleSpeed = (s: 1 | 2 | 4) => {
+    setSpeed(s)
+    sendMessage({ type: 'speed', value: s })
+  }
 
   return (
     <aside className="h-full bg-white/[0.02] backdrop-blur-sm border-r border-white/5 p-5 overflow-y-auto">
@@ -46,7 +70,7 @@ export function ControlPanel() {
         {/* Start / Pause buttons */}
         <div className="flex gap-2 mb-4">
           <button
-            onClick={() => setIsRunning(true)}
+            onClick={handleStart}
             className={`flex-1 px-3 py-2 text-xs font-mono uppercase tracking-wider rounded-sm transition-colors ${
               isRunning
                 ? 'bg-cyan-500/20 text-cyan-400'
@@ -56,7 +80,7 @@ export function ControlPanel() {
             Start
           </button>
           <button
-            onClick={() => setIsRunning(false)}
+            onClick={handlePause}
             className={`flex-1 px-3 py-2 text-xs font-mono uppercase tracking-wider rounded-sm transition-colors ${
               !isRunning
                 ? 'bg-white/10 text-gray-400'
@@ -73,7 +97,7 @@ export function ControlPanel() {
           {([1, 2, 4] as const).map((s) => (
             <button
               key={s}
-              onClick={() => setSpeed(s)}
+              onClick={() => handleSpeed(s)}
               className={`flex-1 px-3 py-1.5 text-xs font-mono rounded-sm transition-colors ${
                 speed === s
                   ? 'bg-white/10 text-gray-200'

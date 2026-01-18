@@ -9,6 +9,14 @@ const ZOOM_MIN = 0.5
 const ZOOM_MAX = 3.0
 const ZOOM_SPEED = 0.001
 
+// Agent rendering
+const AGENT_RADIUS = 3
+const AGENT_COLORS = {
+  NORMAL: 0x34d399,    // emerald-400
+  BURNOUT: 0xf87171,   // red-400
+  UNEMPLOYED: 0xfbbf24 // amber-400
+}
+
 // District definitions (12 rectangles with muted dystopian colors)
 const DISTRICTS = [
   { x: 100, y: 100, w: 300, h: 250, color: 0x1e3a5f },  // industrial blue
@@ -25,12 +33,20 @@ const DISTRICTS = [
   { x: 1300, y: 820, w: 280, h: 180, color: 0x4a4a2d }, // khaki
 ]
 
-export function createCityRenderer(container: HTMLDivElement): { destroy: () => void } {
+export function createCityRenderer(container: HTMLDivElement): {
+  destroy: () => void
+  setAgents: (positions: Float32Array, flags?: Uint8Array) => void
+} {
   const app = new Application()
   let initialized = false
 
   // World container for camera transforms
   const world = new Container()
+
+  // Agents container and graphics
+  const agentsContainer = new Container()
+  const agentsGraphics = new Graphics()
+  agentsContainer.addChild(agentsGraphics)
 
   // Camera state
   let isDragging = false
@@ -54,6 +70,7 @@ export function createCityRenderer(container: HTMLDivElement): { destroy: () => 
 
     drawGrid()
     drawDistricts()
+    world.addChild(agentsContainer)
     setupInteraction()
   })
 
@@ -151,12 +168,31 @@ export function createCityRenderer(container: HTMLDivElement): { destroy: () => 
   })
   resizeObserver.observe(container)
 
+  function setAgents(positions: Float32Array, flags?: Uint8Array): void {
+    agentsGraphics.clear()
+    const agentCount = positions.length / 2
+
+    for (let i = 0; i < agentCount; i++) {
+      const x = positions[i * 2]
+      const y = positions[i * 2 + 1]
+      const flag = flags ? flags[i] : 0
+
+      const color = flag === 1 ? AGENT_COLORS.BURNOUT
+                  : flag === 2 ? AGENT_COLORS.UNEMPLOYED
+                  : AGENT_COLORS.NORMAL
+
+      agentsGraphics.circle(x, y, AGENT_RADIUS)
+      agentsGraphics.fill({ color, alpha: 0.9 })
+    }
+  }
+
   return {
     destroy: () => {
       resizeObserver.disconnect()
       initPromise.then(() => {
         app.destroy(true, { children: true })
       })
-    }
+    },
+    setAgents
   }
 }

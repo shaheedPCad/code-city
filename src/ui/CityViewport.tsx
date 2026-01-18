@@ -37,20 +37,20 @@ export function CityViewport() {
       </div>
 
       {/* Legend Overlay */}
-      <div className="absolute bottom-6 left-6 bg-black/40 backdrop-blur-sm rounded-sm px-3 py-2 border border-white/5 z-10">
-        <div className="text-[9px] uppercase tracking-wider text-gray-500 mb-2">Legend</div>
+      <div className="absolute bottom-6 left-6 bg-panel/70 backdrop-blur border border-white/10 rounded px-3 py-2.5 z-10">
+        <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Legend</div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400/80" />
-            <span className="text-[10px] text-gray-400">Normal</span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            <span className="text-[11px] text-gray-400">Normal</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-400/80" />
-            <span className="text-[10px] text-gray-400">Burnout</span>
+            <span className="w-2 h-2 rounded-full bg-red-400" />
+            <span className="text-[11px] text-gray-400">Burnout</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400/80" />
-            <span className="text-[10px] text-gray-400">Unemployed</span>
+            <span className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-[11px] text-gray-400">Unemployed</span>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { TelemetryPanel } from './TelemetryPanel'
 
 export function AppShell() {
   return (
-    <div className="h-screen w-screen grid grid-cols-[320px_1fr_320px]">
+    <div className="h-screen w-screen overflow-hidden grid grid-cols-[320px_1fr_320px]">
       <ControlPanel />
       <CityViewport />
       <TelemetryPanel />

@@ -37,7 +37,7 @@ export function ControlPanel() {
   const [isRunning, setIsRunning] = useState(false)
 
   return (
-    <aside className="bg-white/[0.02] backdrop-blur-sm border-r border-white/5 p-5 overflow-y-auto">
+    <aside className="h-full bg-white/[0.02] backdrop-blur-sm border-r border-white/5 p-5 overflow-y-auto">
       <div className="text-xs font-mono text-cyan-400/80 mb-6 tracking-wider">
         CONTROL
       </div>

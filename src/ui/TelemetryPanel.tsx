@@ -10,7 +10,7 @@ const kpis = [
 
 export function TelemetryPanel() {
   return (
-    <aside className="bg-white/[0.02] backdrop-blur-sm border-l border-white/5 p-5 flex flex-col overflow-hidden">
+    <aside className="h-full bg-white/[0.02] backdrop-blur-sm border-l border-white/5 p-5 flex flex-col overflow-hidden">
       <div className="text-xs font-mono text-cyan-400/80 mb-5 tracking-wider">
         TELEMETRY
       </div>

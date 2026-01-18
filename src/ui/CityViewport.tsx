@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 import { createCityRenderer } from '../render/createCityRenderer'
+import SimWorker from '../worker/simWorker?worker'
 
 export function CityViewport() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -8,19 +9,27 @@ export function CityViewport() {
     if (!containerRef.current) return
 
     const renderer = createCityRenderer(containerRef.current)
+    const worker = new SimWorker()
+
+    worker.onmessage = (e: MessageEvent) => {
+      const { type, positions, flags } = e.data
+      if (type === 'snapshot') {
+        const positionsArray = new Float32Array(positions)
+        const flagsArray = new Uint8Array(flags)
+        renderer.setAgents(positionsArray, flagsArray)
+      }
+    }
 
     return () => {
+      worker.terminate()
       renderer.destroy()
     }
   }, [])
 
   return (
-    <div
-      ref={containerRef}
-      className="bg-[#080a0e] flex flex-col relative"
-    >
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Status Bar - Three Column Layout */}
-      <div className="grid grid-cols-3 items-center px-4 py-2 border-b border-white/5 relative z-10">
+      <div className="shrink-0 grid grid-cols-3 items-center px-4 py-2 border-b border-white/5 relative z-10">
         <div className="flex items-center gap-2">
           <span className="text-xs font-mono text-cyan-400/80 tracking-wider">CODE CITY</span>
           <span className="text-[10px] uppercase tracking-wider text-gray-600">v0.1.0</span>
@@ -36,21 +45,24 @@ export function CityViewport() {
         </div>
       </div>
 
-      {/* Legend Overlay */}
-      <div className="absolute bottom-6 left-6 bg-panel/70 backdrop-blur border border-white/10 rounded px-3 py-2.5 z-10">
-        <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Legend</div>
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-            <span className="text-[11px] text-gray-400">Normal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-400" />
-            <span className="text-[11px] text-gray-400">Burnout</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400" />
-            <span className="text-[11px] text-gray-400">Unemployed</span>
+      {/* Canvas Container - takes remaining space */}
+      <div ref={containerRef} className="flex-1 min-h-0 relative bg-[#080a0e]">
+        {/* Legend Overlay */}
+        <div className="absolute bottom-6 left-6 bg-panel/70 backdrop-blur border border-white/10 rounded px-3 py-2.5 z-10">
+          <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">Legend</div>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-[11px] text-gray-400">Normal</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-400" />
+              <span className="text-[11px] text-gray-400">Burnout</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span className="text-[11px] text-gray-400">Unemployed</span>
+            </div>
           </div>
         </div>
       </div>

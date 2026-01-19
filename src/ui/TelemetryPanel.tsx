@@ -1,11 +1,13 @@
 import { KpiCard } from './KpiCard'
 import { AlertsFeed } from './AlertsFeed'
+import { ProductivityChart, type ProductivityPoint } from './ProductivityChart'
 import type { MetricsData } from '../shared/messages'
 import type { Alert } from './AppShell'
 
 interface TelemetryPanelProps {
   metrics: MetricsData | null
   alerts: Alert[]
+  productivityHistory: ProductivityPoint[]
 }
 
 function getTrend(value: number, thresholdHigh: number, thresholdLow: number): 'up' | 'down' | 'stable' {
@@ -14,7 +16,7 @@ function getTrend(value: number, thresholdHigh: number, thresholdLow: number): '
   return 'stable'
 }
 
-export function TelemetryPanel({ metrics, alerts }: TelemetryPanelProps) {
+export function TelemetryPanel({ metrics, alerts, productivityHistory }: TelemetryPanelProps) {
   const kpis = metrics
     ? [
         {
@@ -65,6 +67,15 @@ export function TelemetryPanel({ metrics, alerts }: TelemetryPanelProps) {
             trend={kpi.trend}
           />
         ))}
+      </div>
+
+      <div className="mb-4 shrink-0">
+        <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">
+          Productivity (60s)
+        </div>
+        <div className="bg-white/5 rounded border border-white/5 p-2 h-32">
+          <ProductivityChart data={productivityHistory} />
+        </div>
       </div>
 
       <div className="flex-1 min-h-0">

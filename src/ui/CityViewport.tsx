@@ -1,20 +1,18 @@
-import { useRef, useEffect, type RefObject } from 'react'
+import { useRef, useEffect } from 'react'
 import { createCityRenderer } from '../render/createCityRenderer'
 
 interface CityViewportProps {
-  worker: RefObject<Worker | null>
-  workerReady: boolean
+  worker: Worker | null
 }
 
-export function CityViewport({ worker, workerReady }: CityViewportProps) {
+export function CityViewport({ worker }: CityViewportProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const receivedFirstSnapshot = useRef(false)
 
   useEffect(() => {
-    if (!containerRef.current || !worker.current) return
+    if (!containerRef.current || !worker) return
 
     const renderer = createCityRenderer(containerRef.current)
-    const w = worker.current
 
     const handleMessage = (e: MessageEvent) => {
       const { type, positions, flags } = e.data
@@ -29,13 +27,13 @@ export function CityViewport({ worker, workerReady }: CityViewportProps) {
       }
     }
 
-    w.addEventListener('message', handleMessage)
+    worker.addEventListener('message', handleMessage)
 
     return () => {
-      w.removeEventListener('message', handleMessage)
+      worker.removeEventListener('message', handleMessage)
       renderer.destroy()
     }
-  }, [worker, workerReady])
+  }, [worker])
 
   return (
     <div className="h-full flex flex-col overflow-hidden">

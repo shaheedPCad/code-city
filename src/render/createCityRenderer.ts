@@ -172,16 +172,23 @@ export function createCityRenderer(container: HTMLDivElement): {
     agentsGraphics.clear()
     const agentCount = positions.length / 2
 
-    for (let i = 0; i < agentCount; i++) {
-      const x = positions[i * 2]
-      const y = positions[i * 2 + 1]
-      const flag = flags ? flags[i] : 0
+    // Group agents by flag for batched drawing (reduces draw calls and prevents state accumulation)
+    const groups: { [key: number]: number[] } = { 0: [], 1: [], 2: [] }
 
-      const color = flag === 1 ? AGENT_COLORS.BURNOUT
-                  : flag === 2 ? AGENT_COLORS.UNEMPLOYED
+    for (let i = 0; i < agentCount; i++) {
+      const flag = flags ? flags[i] : 0
+      groups[flag].push(i)
+    }
+
+    // Draw each group with its color
+    for (const [flag, indices] of Object.entries(groups)) {
+      const color = Number(flag) === 1 ? AGENT_COLORS.BURNOUT
+                  : Number(flag) === 2 ? AGENT_COLORS.UNEMPLOYED
                   : AGENT_COLORS.NORMAL
 
-      agentsGraphics.circle(x, y, AGENT_RADIUS)
+      for (const i of indices) {
+        agentsGraphics.circle(positions[i * 2], positions[i * 2 + 1], AGENT_RADIUS)
+      }
       agentsGraphics.fill({ color, alpha: 0.9 })
     }
   }

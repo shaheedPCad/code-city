@@ -1,10 +1,6 @@
-type Severity = 'critical' | 'warning' | 'info'
+import type { Alert } from './AppShell'
 
-interface Alert {
-  time: string
-  severity: Severity
-  message: string
-}
+type Severity = 'critical' | 'warning' | 'info'
 
 const dummyAlerts: Alert[] = [
   { time: '14:32:01', severity: 'critical', message: 'Burnout cluster detected in District 3' },
@@ -16,6 +12,10 @@ const dummyAlerts: Alert[] = [
   { time: '14:20:14', severity: 'info', message: 'Overtime normalized. Sleep optional.' },
   { time: '14:18:02', severity: 'warning', message: 'Coffee supplies critical in Sector 5' },
 ]
+
+interface AlertsFeedProps {
+  alerts?: Alert[]
+}
 
 const severityStyles: Record<Severity, string> = {
   critical: 'text-red-400/80',
@@ -29,14 +29,16 @@ const severityIcons: Record<Severity, string> = {
   info: '○',
 }
 
-export function AlertsFeed() {
+export function AlertsFeed({ alerts }: AlertsFeedProps) {
+  const displayAlerts = alerts?.length ? alerts : dummyAlerts
+
   return (
     <div className="bg-white/[0.03] border border-white/5 rounded-sm flex flex-col h-full">
       <div className="text-[10px] uppercase tracking-wider text-gray-500 p-3 border-b border-white/5">
         Alerts
       </div>
       <div className="flex-1 overflow-y-auto">
-        {dummyAlerts.map((alert, i) => (
+        {displayAlerts.map((alert, i) => (
           <div
             key={i}
             className="px-3 py-2.5 border-b border-white/5 last:border-b-0 text-xs"

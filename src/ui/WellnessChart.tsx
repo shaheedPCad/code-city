@@ -1,15 +1,16 @@
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tooltip } from 'recharts'
 
-export interface ProductivityPoint {
+export interface WellnessPoint {
   ts: number
-  value: number
+  burnout: number
+  unemployment: number
 }
 
-interface ProductivityChartProps {
-  data: ProductivityPoint[]
+interface WellnessChartProps {
+  data: WellnessPoint[]
 }
 
-export function ProductivityChart({ data }: ProductivityChartProps) {
+export function WellnessChart({ data }: WellnessChartProps) {
   const hasData = data.length > 0
 
   // Recharts needs 2+ points for a line, so duplicate single point
@@ -24,7 +25,7 @@ export function ProductivityChart({ data }: ProductivityChartProps) {
           Waiting for metrics…
         </div>
       )}
-      <ResponsiveContainer width="100%" height={112}>
+      <ResponsiveContainer width="100%" height={80}>
         <LineChart data={chartData} margin={{ top: 5, right: 5, bottom: 5, left: 25 }}>
           <CartesianGrid
             horizontal={true}
@@ -49,7 +50,8 @@ export function ProductivityChart({ data }: ProductivityChartProps) {
               return (
                 <div className="bg-gray-900/95 border border-white/10 rounded px-2 py-1 text-xs">
                   <div className="text-gray-400">{secsAgo}s ago</div>
-                  <div className="text-cyan-400">{point.value.toFixed(1)}%</div>
+                  <div className="text-red-400">Burnout: {point.burnout.toFixed(1)}%</div>
+                  <div className="text-amber-400">Unemployed: {point.unemployment.toFixed(1)}%</div>
                 </div>
               )
             }}
@@ -57,8 +59,16 @@ export function ProductivityChart({ data }: ProductivityChartProps) {
           />
           <Line
             type="monotone"
-            dataKey="value"
-            stroke="#22d3ee"
+            dataKey="burnout"
+            stroke="#f87171"
+            strokeWidth={1.5}
+            dot={false}
+            isAnimationActive={false}
+          />
+          <Line
+            type="monotone"
+            dataKey="unemployment"
+            stroke="#fbbf24"
             strokeWidth={1.5}
             dot={false}
             isAnimationActive={false}

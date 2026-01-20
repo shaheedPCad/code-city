@@ -1,6 +1,7 @@
 import { KpiCard } from './KpiCard'
 import { AlertsFeed } from './AlertsFeed'
 import { ProductivityChart, type ProductivityPoint } from './ProductivityChart'
+import { WellnessChart, type WellnessPoint } from './WellnessChart'
 import type { MetricsData } from '../shared/messages'
 import type { Alert } from './AppShell'
 
@@ -8,6 +9,7 @@ interface TelemetryPanelProps {
   metrics: MetricsData | null
   alerts: Alert[]
   productivityHistory: ProductivityPoint[]
+  wellnessHistory: WellnessPoint[]
 }
 
 function getTrend(value: number, thresholdHigh: number, thresholdLow: number): 'up' | 'down' | 'stable' {
@@ -16,7 +18,7 @@ function getTrend(value: number, thresholdHigh: number, thresholdLow: number): '
   return 'stable'
 }
 
-export function TelemetryPanel({ metrics, alerts, productivityHistory }: TelemetryPanelProps) {
+export function TelemetryPanel({ metrics, alerts, productivityHistory, wellnessHistory }: TelemetryPanelProps) {
   const kpis = metrics
     ? [
         {
@@ -53,11 +55,13 @@ export function TelemetryPanel({ metrics, alerts, productivityHistory }: Telemet
 
   return (
     <aside className="h-full bg-white/[0.02] backdrop-blur-sm border-l border-white/5 p-5 flex flex-col overflow-hidden">
-      <div className="text-xs font-mono text-cyan-400/80 mb-5 tracking-wider">
+      {/* Header */}
+      <h2 className="text-xs font-mono tracking-widest text-cyan-500/70 mb-4 shrink-0">
         TELEMETRY
-      </div>
+      </h2>
 
-      <div className="grid grid-cols-2 gap-4 mb-5">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 gap-3 mb-4 shrink-0">
         {kpis.map((kpi) => (
           <KpiCard
             key={kpi.label}
@@ -69,15 +73,23 @@ export function TelemetryPanel({ metrics, alerts, productivityHistory }: Telemet
         ))}
       </div>
 
-      <div className="mb-4 shrink-0">
-        <div className="text-[10px] uppercase tracking-wider text-gray-500 mb-2">
-          Productivity (60s)
-        </div>
-        <div className="bg-white/5 rounded border border-white/5 p-2 h-32">
+      {/* Productivity Chart */}
+      <div className="mb-3 shrink-0">
+        <div className="text-[10px] font-mono text-gray-400 mb-1">PRODUCTIVITY (60S)</div>
+        <div className="h-32 bg-white/[0.02] border border-white/5 rounded p-2 overflow-hidden">
           <ProductivityChart data={productivityHistory} />
         </div>
       </div>
 
+      {/* Wellness Chart */}
+      <div className="mb-3 shrink-0">
+        <div className="text-[10px] font-mono text-gray-400 mb-1">WELLNESS (60S)</div>
+        <div className="h-24 bg-white/[0.02] border border-white/5 rounded p-2 overflow-hidden">
+          <WellnessChart data={wellnessHistory} />
+        </div>
+      </div>
+
+      {/* Alerts - takes remaining space and scrolls */}
       <div className="flex-1 min-h-0">
         <AlertsFeed alerts={alerts} />
       </div>

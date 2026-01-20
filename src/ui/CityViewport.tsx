@@ -3,9 +3,10 @@ import { createCityRenderer } from '../render/createCityRenderer'
 
 interface CityViewportProps {
   worker: Worker | null
+  isProtocolActive: boolean
 }
 
-export function CityViewport({ worker }: CityViewportProps) {
+export function CityViewport({ worker, isProtocolActive }: CityViewportProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const receivedFirstSnapshot = useRef(false)
 
@@ -49,8 +50,16 @@ export function CityViewport({ worker }: CityViewportProps) {
           </span>
         </div>
         <div className="flex items-center gap-2 justify-end">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60 animate-pulse" />
-          <span className="text-[10px] font-mono uppercase tracking-wider text-gray-500">IDLE</span>
+          <span className={`w-1.5 h-1.5 rounded-full ${
+            isProtocolActive
+              ? 'bg-red-500 animate-pulse'
+              : 'bg-emerald-500/60 animate-pulse'
+          }`} />
+          <span className={`text-[10px] font-mono uppercase tracking-wider ${
+            isProtocolActive ? 'text-red-400' : 'text-gray-500'
+          }`}>
+            {isProtocolActive ? 'PROTOCOL ACTIVE' : 'IDLE'}
+          </span>
         </div>
       </div>
 

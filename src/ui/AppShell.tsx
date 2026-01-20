@@ -5,6 +5,7 @@ import { TelemetryPanel } from './TelemetryPanel'
 import SimWorker from '../worker/simWorker?worker'
 import type { MetricsData, WorkerToMainMessage } from '../shared/messages'
 import type { ProductivityPoint } from './ProductivityChart'
+import type { WellnessPoint } from './WellnessChart'
 
 export interface Alert {
   time: string
@@ -22,6 +23,8 @@ export function AppShell() {
   const [metrics, setMetrics] = useState<MetricsData | null>(null)
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [productivityHistory, setProductivityHistory] = useState<ProductivityPoint[]>([])
+  const [wellnessHistory, setWellnessHistory] = useState<WellnessPoint[]>([])
+  const [isProtocolActive, setIsProtocolActive] = useState(false)
   const startTimeRef = useRef(Date.now())
 
   useEffect(() => {
@@ -40,6 +43,16 @@ export function AppShell() {
         const ts = (Date.now() - startTimeRef.current) / 1000
         setProductivityHistory(prev => {
           const next = [...prev, { ts, value: msg.metrics.productivity }]
+          return next.length > 120 ? next.slice(-120) : next
+        })
+
+        // Wellness history (burnout + unemployment)
+        setWellnessHistory(prev => {
+          const next = [...prev, {
+            ts,
+            burnout: msg.metrics.burnout,
+            unemployment: msg.metrics.unemployment
+          }]
           return next.length > 120 ? next.slice(-120) : next
         })
       } else if (msg.type === 'alert') {
@@ -66,9 +79,9 @@ export function AppShell() {
 
   return (
     <div className="h-screen w-screen overflow-hidden grid grid-cols-[320px_1fr_320px]">
-      <ControlPanel worker={worker} />
-      <CityViewport worker={worker} />
-      <TelemetryPanel metrics={metrics} alerts={alerts} productivityHistory={productivityHistory} />
+      <ControlPanel worker={worker} isProtocolActive={isProtocolActive} onProtocolActivate={() => setIsProtocolActive(true)} />
+      <CityViewport worker={worker} isProtocolActive={isProtocolActive} />
+      <TelemetryPanel metrics={metrics} alerts={alerts} productivityHistory={productivityHistory} wellnessHistory={wellnessHistory} />
     </div>
   )
 }

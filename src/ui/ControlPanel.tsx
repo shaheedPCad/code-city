@@ -3,6 +3,8 @@ import type { MainToWorkerMessage } from '../shared/messages'
 
 interface ControlPanelProps {
   worker: Worker | null
+  isProtocolActive: boolean
+  onProtocolActivate: () => void
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -37,10 +39,9 @@ function Toggle({ label, defaultChecked }: { label: string; defaultChecked?: boo
   )
 }
 
-export function ControlPanel({ worker }: ControlPanelProps) {
+export function ControlPanel({ worker, isProtocolActive, onProtocolActivate }: ControlPanelProps) {
   const [speed, setSpeed] = useState<1 | 2 | 4>(1)
   const [isRunning, setIsRunning] = useState(false)
-  const [isOptimized, setIsOptimized] = useState(false)
 
   const sendMessage = (msg: MainToWorkerMessage) => {
     worker?.postMessage(msg)
@@ -62,7 +63,7 @@ export function ControlPanel({ worker }: ControlPanelProps) {
   }
 
   const handleOptimize = () => {
-    setIsOptimized(true)
+    onProtocolActivate()
     sendMessage({ type: 'optimizeProductivity' })
   }
 
@@ -127,16 +128,27 @@ export function ControlPanel({ worker }: ControlPanelProps) {
       </Section>
 
       <Section title="Directives">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[10px] font-mono text-gray-500">PROTOCOL</span>
+          <div className="flex items-center gap-1.5">
+            {isProtocolActive && (
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            )}
+            <span className={`text-[10px] font-mono ${isProtocolActive ? 'text-red-400' : 'text-gray-600'}`}>
+              {isProtocolActive ? 'ACTIVE' : 'IDLE'}
+            </span>
+          </div>
+        </div>
         <button
           onClick={handleOptimize}
-          disabled={isOptimized}
+          disabled={isProtocolActive}
           className={`w-full px-3 py-3 text-xs font-mono uppercase tracking-wider rounded-sm transition-colors ${
-            isOptimized
-              ? 'bg-red-500/10 text-red-400/50 cursor-not-allowed border border-red-500/20'
+            isProtocolActive
+              ? 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-[0_0_12px_rgba(239,68,68,0.3)] cursor-not-allowed'
               : 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30'
           }`}
         >
-          {isOptimized ? 'PROTOCOL ACTIVE' : 'OPTIMIZE FOR PRODUCTIVITY'}
+          {isProtocolActive ? 'PROTOCOL ACTIVE' : 'OPTIMIZE FOR PRODUCTIVITY'}
         </button>
       </Section>
     </aside>
